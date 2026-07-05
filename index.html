@@ -124,11 +124,10 @@
     <!-- Login Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <h2>Sign In with Google</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 20px;">Click below to login with your Google account</p>
-            <button class="modal-btn primary" onclick="googleLogin()" style="background: linear-gradient(135deg, #4285F4 0%, #34A853 100%); font-size: 1.1rem;">
-                🔵 Sign In with Google
-            </button>
+            <h2>Enter Your Email</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">No password needed - just enter your email to save calculations</p>
+            <input type="email" id="userEmail" class="modal-input" placeholder="your.email@gmail.com" autocomplete="email">
+            <button class="modal-btn primary" onclick="loginWithEmail()" style="width: 100%;">Sign In</button>
             <button class="modal-btn secondary" onclick="closeAuthModal()" style="width: 100%; margin-top: 10px;">Close</button>
         </div>
     </div>
@@ -178,14 +177,15 @@
             const saveBtn = document.getElementById('saveBtn');
             const logoutBtn = document.getElementById('logoutBtn');
             const authBtn = document.getElementById('authBtn');
+            const userEmail = localStorage.getItem('userEmail');
 
-            if (currentUser) {
-                status.textContent = `Logged in as: ${currentUser.email}`;
+            if (currentUser || userEmail) {
+                status.textContent = `👤 Logged in as: ${userEmail || currentUser.email || 'User'}`;
                 saveBtn.style.display = 'block';
                 logoutBtn.style.display = 'block';
                 authBtn.style.display = 'none';
             } else {
-                status.textContent = 'Not logged in';
+                status.textContent = '❌ Not logged in';
                 saveBtn.style.display = 'none';
                 logoutBtn.style.display = 'none';
                 authBtn.style.display = 'block';
@@ -198,43 +198,40 @@
 
         function closeAuthModal() {
             document.getElementById('authModal').classList.remove('active');
+            document.getElementById('userEmail').value = '';
         }
 
-        function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('profile');
-            provider.addScope('email');
+        function loginWithEmail() {
+            const email = document.getElementById('userEmail').value.trim();
 
-            console.log('Starting Google Sign-In...');
+            if (!email || !email.includes('@')) {
+                toast('Please enter a valid email', 'error');
+                return;
+            }
 
-            auth.signInWithRedirect(provider)
+            // Sign in anonymously and store email in localStorage
+            auth.signInAnonymously()
+                .then((result) => {
+                    // Store email in Firestore user profile
+                    return db.collection('users').doc(result.user.uid).set({
+                        email: email,
+                        loginTime: firebase.firestore.Timestamp.now(),
+                        displayName: email.split('@')[0]
+                    }, { merge: true })
+                    .then(() => {
+                        // Also store in localStorage for quick access
+                        localStorage.setItem('userEmail', email);
+                        localStorage.setItem('userID', result.user.uid);
+
+                        toast('✅ Logged in as ' + email + '!', 'success');
+                        closeAuthModal();
+                    });
+                })
                 .catch((error) => {
-                    console.error('Google login error:', error);
-                    console.error('Error code:', error.code);
-                    console.error('Error message:', error.message);
-
-                    if (error.code === 'auth/operation-not-supported-in-this-environment') {
-                        toast('⚠️ Google Sign-In not configured. Check Firebase console.', 'error');
-                    } else if (error.code === 'auth/popup-blocked') {
-                        toast('⚠️ Popup blocked. Please allow popups and try again.', 'error');
-                    } else {
-                        toast('Error: ' + error.message, 'error');
-                    }
+                    console.error('Login error:', error);
+                    toast('Error: ' + error.message, 'error');
                 });
         }
-
-        // Handle redirect sign-in result
-        auth.getRedirectResult()
-            .then((result) => {
-                if (result.user) {
-                    console.log('Successfully logged in:', result.user.displayName);
-                    toast('✅ Logged in as ' + result.user.displayName + '!', 'success');
-                    closeAuthModal();
-                }
-            })
-            .catch((error) => {
-                console.error('Redirect result error:', error);
-            });
 
         function logout() {
             auth.signOut().then(() => {
