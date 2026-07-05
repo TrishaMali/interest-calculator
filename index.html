@@ -898,29 +898,39 @@
             setTimeout(() => toast.classList.remove('active'), 3000);
         }
 
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            document.getElementById('loginModal').classList.add('active');
+        // Wait for DOM to be ready
+        window.addEventListener('DOMContentLoaded', function() {
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    document.getElementById('loginModal').classList.add('active');
+                });
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', handleLogout);
+            }
+
+            document.getElementById('initialAmount').addEventListener('input', calculateInterest);
+            document.getElementById('monthlyInvestment').addEventListener('input', calculateInterest);
+            document.getElementById('annualReturn').addEventListener('input', calculateInterest);
+            document.getElementById('duration').addEventListener('input', calculateInterest);
+
+            document.getElementById('authPassword').addEventListener('keypress', e => {
+                if (e.key === 'Enter') {
+                    const btn = e.target.nextElementSibling?.nextElementSibling?.firstElementChild;
+                    if (btn) btn.click();
+                }
+            });
+
+            calculateInterest();
         });
-
-        document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-
-        document.getElementById('initialAmount').addEventListener('input', calculateInterest);
-        document.getElementById('monthlyInvestment').addEventListener('input', calculateInterest);
-        document.getElementById('annualReturn').addEventListener('input', calculateInterest);
-        document.getElementById('duration').addEventListener('input', calculateInterest);
 
         window.addEventListener('click', e => {
             if (e.target.classList.contains('modal')) e.target.classList.remove('active');
         });
-
-        document.getElementById('authPassword').addEventListener('keypress', e => {
-            if (e.key === 'Enter') {
-                const btn = e.target.nextElementSibling?.nextElementSibling?.firstElementChild;
-                if (btn) btn.click();
-            }
-        });
-
-        calculateInterest();
     </script>
 </body>
 </html>
