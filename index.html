@@ -9,18 +9,26 @@
     <script src="https://www.gstatic.com/firebasejs/compat/firestore.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+
+        /* LOGIN SCREEN */
+        .login-screen { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-box { background: white; padding: 50px; border-radius: 15px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 500px; }
+        .login-box h1 { color: #667eea; font-size: 2.5rem; margin-bottom: 20px; }
+        .login-box p { color: #666; font-size: 1.1rem; margin-bottom: 40px; }
+        .google-btn { padding: 15px 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; display: inline-block; }
+        .google-btn:hover { opacity: 0.9; }
+        .login-screen.hidden { display: none; }
+
+        /* APP SCREEN */
+        .app-screen { display: none; padding: 20px; }
+        .app-screen.show { display: block; }
         .container { background: white; border-radius: 15px; max-width: 1000px; margin: 0 auto; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
         .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-
-        .auth-box { background: #f5f5f5; padding: 20px; border-bottom: 2px solid #e0e0e0; }
-        .auth-box input { padding: 12px; border: 2px solid #667eea; border-radius: 8px; width: 40%; font-size: 1rem; }
-        .auth-box button { padding: 12px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-left: 10px; }
-        .auth-box button:hover { background: #764ba2; }
-        .logout-btn { background: #ff6b6b; }
-        .logout-btn:hover { background: #ff5252; }
-        .user-info { color: #667eea; font-weight: 600; margin-top: 10px; }
+        .header-user { background: rgba(0,0,0,0.1); padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .header-user button { padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .header-user button:hover { background: #ff5252; }
 
         .content { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; }
         .section h2 { color: #667eea; margin-bottom: 20px; font-size: 1.3rem; }
@@ -40,8 +48,7 @@
         .result-card h3 { font-size: 0.85rem; opacity: 0.9; margin-bottom: 10px; }
         .result-value { font-size: 2rem; font-weight: 700; }
 
-        .history { margin-top: 30px; padding: 20px; background: #f8f9ff; border-radius: 12px; max-height: 400px; overflow-y: auto; display: none; }
-        .history.show { display: block; }
+        .history { margin-top: 30px; padding: 20px; background: #f8f9ff; border-radius: 12px; max-height: 400px; overflow-y: auto; }
         .history h3 { color: #667eea; margin-bottom: 15px; }
         .history-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
         .history-item-name { font-weight: 600; }
@@ -56,74 +63,84 @@
         .toast.success { background: #43e97b; }
         .toast.error { background: #ff6b6b; }
 
-        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } .auth-box input { width: 100%; } .auth-box button { margin-left: 0; margin-top: 10px; } }
+        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>💰 Compound Interest Calculator</h1>
-            <p>Calculate your wealth growth with compound interest</p>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <h1>💰 Calculator</h1>
+            <p>Sign in with your Google account to get started</p>
+            <button class="google-btn" onclick="googleSignIn()">🔵 Sign in with Google</button>
+            <p id="errorMsg" style="color: #ff6b6b; margin-top: 20px;"></p>
         </div>
+    </div>
 
-        <div class="auth-box">
-            <input type="email" id="emailInput" placeholder="Enter your email" autocomplete="email">
-            <button onclick="login()">Sign In</button>
-            <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
-            <div class="user-info" id="userInfo"></div>
-        </div>
-
-        <div class="content">
-            <!-- Input Section -->
-            <div class="section">
-                <h2>Investment Details</h2>
-
-                <div class="input-group">
-                    <label>Initial Amount (₹)</label>
-                    <input type="number" id="initial" value="100000" min="0" step="1000" oninput="calculate()">
-                </div>
-
-                <div class="input-group">
-                    <label>Monthly Investment (₹)</label>
-                    <input type="number" id="monthly" value="5000" min="0" step="1000" oninput="calculate()">
-                </div>
-
-                <div class="input-group">
-                    <label>Expected Annual Return (%)</label>
-                    <input type="number" id="return" value="12" min="0" max="100" step="0.1" oninput="calculate()">
-                </div>
-
-                <div class="input-group">
-                    <label>Investment Duration (Years)</label>
-                    <input type="number" id="years" value="20" min="1" step="1" oninput="calculate()">
-                </div>
-
-                <button class="btn btn-primary" onclick="calculate()">Calculate</button>
-                <button class="btn btn-primary" id="saveBtn" onclick="saveCalculation()" style="display: none;">💾 Save to Firebase</button>
-
-                <div class="history" id="history">
-                    <h3>📊 Your Saved Calculations</h3>
-                    <div id="historyList"></div>
+    <!-- APP SCREEN -->
+    <div id="appScreen" class="app-screen">
+        <div class="container">
+            <div class="header">
+                <h1>💰 Compound Interest Calculator</h1>
+                <p>Calculate your wealth growth with compound interest</p>
+                <div class="header-user">
+                    <div id="userName" style="margin-bottom: 10px;"></div>
+                    <button onclick="logout()">Logout</button>
                 </div>
             </div>
 
-            <!-- Results Section -->
-            <div class="section">
-                <h2>Your Results</h2>
+            <div class="content">
+                <!-- INPUT -->
+                <div class="section">
+                    <h2>Investment Details</h2>
 
-                <div class="result-card">
-                    <h3>Total Amount Invested</h3>
-                    <div class="result-value" id="resultInvested">₹0</div>
+                    <div class="input-group">
+                        <label>Initial Amount (₹)</label>
+                        <input type="number" id="initial" value="100000" min="0" step="1000" oninput="calculate()">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Monthly Investment (₹)</label>
+                        <input type="number" id="monthly" value="5000" min="0" step="1000" oninput="calculate()">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Expected Annual Return (%)</label>
+                        <input type="number" id="returnRate" value="12" min="0" max="100" step="0.1" oninput="calculate()">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Investment Duration (Years)</label>
+                        <input type="number" id="duration" value="20" min="1" step="1" oninput="calculate()">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="calculate()">Calculate</button>
+                    <button class="btn btn-primary" onclick="saveCalculation()">💾 Save to Firebase</button>
+
+                    <div class="history" id="history">
+                        <h3>📊 Your Saved Calculations</h3>
+                        <div id="historyList"></div>
+                    </div>
                 </div>
 
-                <div class="result-card card-2">
-                    <h3>Interest Earned</h3>
-                    <div class="result-value" id="resultInterest">₹0</div>
-                </div>
+                <!-- RESULTS -->
+                <div class="section">
+                    <h2>Your Results</h2>
 
-                <div class="result-card card-3">
-                    <h3>Final Portfolio Value</h3>
-                    <div class="result-value" id="resultFinal">₹0</div>
+                    <div class="result-card">
+                        <h3>Total Amount Invested</h3>
+                        <div class="result-value" id="resultInvested">₹0</div>
+                    </div>
+
+                    <div class="result-card card-2">
+                        <h3>Interest Earned</h3>
+                        <div class="result-value" id="resultInterest">₹0</div>
+                    </div>
+
+                    <div class="result-card card-3">
+                        <h3>Final Portfolio Value</h3>
+                        <div class="result-value" id="resultFinal">₹0</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,107 +165,93 @@
         let currentUser = null;
         let lastCalculation = null;
 
+        // Check auth state
         auth.onAuthStateChanged(user => {
-            currentUser = user;
-            updateUI();
-            if (user) loadHistory();
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.add('show');
+                document.getElementById('userName').textContent = '✅ Logged in as: ' + user.displayName;
+                loadHistory();
+                calculate();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.remove('show');
+            }
         });
 
-        function updateUI() {
-            const emailInput = document.getElementById('emailInput');
-            const signinBtn = emailInput.nextElementSibling;
-            const logoutBtn = document.getElementById('logoutBtn');
-            const userInfo = document.getElementById('userInfo');
-            const saveBtn = document.getElementById('saveBtn');
-            const history = document.getElementById('history');
-
-            if (currentUser) {
-                emailInput.style.display = 'none';
-                signinBtn.style.display = 'none';
-                logoutBtn.style.display = 'inline-block';
-                userInfo.textContent = '✅ Logged in as: ' + localStorage.getItem('userEmail');
-                saveBtn.style.display = 'block';
-                history.classList.add('show');
-            } else {
-                emailInput.style.display = 'inline-block';
-                signinBtn.style.display = 'inline-block';
-                logoutBtn.style.display = 'none';
-                userInfo.textContent = '';
-                saveBtn.style.display = 'none';
-                history.classList.remove('show');
-            }
-        }
-
-        function login() {
-            const email = document.getElementById('emailInput').value.trim();
-
-            if (!email || !email.includes('@')) {
-                showToast('Enter valid email', 'error');
-                return;
-            }
-
-            auth.signInAnonymously().then(result => {
-                localStorage.setItem('userEmail', email);
-                localStorage.setItem('userID', result.user.uid);
-
-                db.collection('users').doc(result.user.uid).set({
-                    email: email,
-                    loginTime: firebase.firestore.Timestamp.now()
-                }, { merge: true });
-
-                showToast('✅ Logged in as ' + email, 'success');
-                document.getElementById('emailInput').value = '';
-            }).catch(err => showToast('Error: ' + err.message, 'error'));
+        function googleSignIn() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(result => {
+                    console.log('Signed in:', result.user.displayName);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('errorMsg').textContent = 'Error: ' + error.message;
+                });
         }
 
         function logout() {
-            auth.signOut();
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('userID');
-            currentUser = null;
-            showToast('Logged out', 'success');
+            auth.signOut().then(() => {
+                showToast('Logged out', 'success');
+            });
         }
 
         function calculate() {
             const initial = parseFloat(document.getElementById('initial').value) || 0;
             const monthly = parseFloat(document.getElementById('monthly').value) || 0;
-            const returnRate = parseFloat(document.getElementById('return').value) || 0;
-            const duration = parseFloat(document.getElementById('years').value) || 0;
+            const returnRate = parseFloat(document.getElementById('returnRate').value) || 0;
+            const duration = parseFloat(document.getElementById('duration').value) || 0;
 
+            if (duration <= 0) return;
+
+            // Total invested
             const totalInvested = initial + (monthly * 12 * duration);
+
+            // Monthly rate
             const monthlyRate = returnRate / 100 / 12;
+            const months = duration * 12;
 
-            const lumpSumFV = initial * Math.pow(1 + monthlyRate, duration * 12);
+            // Future value of lump sum
+            const lumpSumFV = initial * Math.pow(1 + monthlyRate, months);
+
+            // Future value of monthly payments
             let monthlyFV = 0;
-
             if (monthlyRate === 0) {
-                monthlyFV = monthly * 12 * duration;
+                monthlyFV = monthly * months;
             } else {
-                monthlyFV = monthly * (Math.pow(1 + monthlyRate, duration * 12) - 1) / monthlyRate;
+                monthlyFV = monthly * (Math.pow(1 + monthlyRate, months) - 1) / monthlyRate;
             }
 
+            // Total future value
             const finalValue = lumpSumFV + monthlyFV;
-            const interest = finalValue - totalInvested;
+            const interestEarned = finalValue - totalInvested;
 
             lastCalculation = {
-                initial, monthly, returnRate, duration,
+                initial: initial,
+                monthly: monthly,
+                returnRate: returnRate,
+                duration: duration,
                 totalInvested: Math.round(totalInvested),
-                interest: Math.round(interest),
+                interestEarned: Math.round(interestEarned),
                 finalValue: Math.round(finalValue)
             };
 
+            // Display results
             document.getElementById('resultInvested').textContent = '₹' + lastCalculation.totalInvested.toLocaleString('en-IN');
-            document.getElementById('resultInterest').textContent = '₹' + lastCalculation.interest.toLocaleString('en-IN');
+            document.getElementById('resultInterest').textContent = '₹' + lastCalculation.interestEarned.toLocaleString('en-IN');
             document.getElementById('resultFinal').textContent = '₹' + lastCalculation.finalValue.toLocaleString('en-IN');
         }
 
         function saveCalculation() {
             if (!currentUser) {
-                showToast('Please sign in', 'error');
+                showToast('Please sign in first', 'error');
                 return;
             }
 
-            const name = prompt('Name this calculation:');
+            const name = prompt('Enter name for this calculation:');
             if (!name) return;
 
             db.collection('users').doc(currentUser.uid).collection('calculations').add({
@@ -256,9 +259,12 @@
                 ...lastCalculation,
                 createdAt: firebase.firestore.Timestamp.now()
             }).then(() => {
-                showToast('✅ Saved!', 'success');
+                showToast('✅ Saved to Firebase!', 'success');
                 loadHistory();
-            }).catch(err => showToast('Error: ' + err.message, 'error'));
+            }).catch(error => {
+                console.error('Error saving:', error);
+                showToast('Error: ' + error.message, 'error');
+            });
         }
 
         function loadHistory() {
@@ -271,7 +277,7 @@
                     list.innerHTML = '';
 
                     if (snapshot.empty) {
-                        list.innerHTML = '<p style="color: #999;">No saved calculations</p>';
+                        list.innerHTML = '<p style="color: #999;">No saved calculations yet</p>';
                         return;
                     }
 
@@ -295,14 +301,14 @@
         function loadCalc(initial, monthly, returnRate, duration) {
             document.getElementById('initial').value = initial;
             document.getElementById('monthly').value = monthly;
-            document.getElementById('return').value = returnRate;
-            document.getElementById('years').value = duration;
+            document.getElementById('returnRate').value = returnRate;
+            document.getElementById('duration').value = duration;
             calculate();
             showToast('✅ Loaded', 'success');
         }
 
         function deleteCalc(docId) {
-            if (!confirm('Delete?')) return;
+            if (!confirm('Delete this calculation?')) return;
             db.collection('users').doc(currentUser.uid).collection('calculations').doc(docId).delete()
                 .then(() => showToast('✅ Deleted', 'success'))
                 .catch(err => showToast('Error', 'error'));
@@ -314,8 +320,6 @@
             toast.className = 'toast show ' + type;
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
-
-        calculate();
     </script>
 </body>
 </html>
