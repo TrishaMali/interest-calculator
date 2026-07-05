@@ -9,54 +9,54 @@
     <script src="https://www.gstatic.com/firebasejs/compat/firestore.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 1000px; margin: 0 auto; overflow: hidden; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { background: white; border-radius: 15px; max-width: 1000px; margin: 0 auto; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
         .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        .header p { font-size: 1rem; opacity: 0.9; }
 
-        .auth-section { background: rgba(0,0,0,0.05); padding: 20px; text-align: center; border-bottom: 1px solid #e0e0e0; }
-        .auth-section button { padding: 10px 30px; background: white; border: 2px solid #667eea; border-radius: 5px; cursor: pointer; font-weight: 600; color: #667eea; margin: 0 10px; }
-        .auth-section button:hover { background: #667eea; color: white; }
+        .auth-box { background: #f5f5f5; padding: 20px; border-bottom: 2px solid #e0e0e0; }
+        .auth-box input { padding: 12px; border: 2px solid #667eea; border-radius: 8px; width: 40%; font-size: 1rem; }
+        .auth-box button { padding: 12px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-left: 10px; }
+        .auth-box button:hover { background: #764ba2; }
+        .logout-btn { background: #ff6b6b; }
+        .logout-btn:hover { background: #ff5252; }
         .user-info { color: #667eea; font-weight: 600; margin-top: 10px; }
 
         .content { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; }
-        .section h2 { color: #667eea; margin-bottom: 25px; font-size: 1.3rem; }
+        .section h2 { color: #667eea; margin-bottom: 20px; font-size: 1.3rem; }
 
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 0.95rem; }
-        .input-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; }
-        .input-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 600; }
+        .input-group input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; }
+        .input-group input:focus { outline: none; border-color: #667eea; }
 
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; transition: all 0.3s; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
-        .btn-secondary { background: #e0e0e0; color: #333; }
-        .btn-secondary:hover { background: #d0d0d0; }
+        .btn-primary:hover { opacity: 0.9; }
 
         .result-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; padding: 20px; margin-bottom: 15px; color: white; }
         .result-card.card-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
         .result-card.card-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        .result-card h3 { font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .result-card h3 { font-size: 0.85rem; opacity: 0.9; margin-bottom: 10px; }
         .result-value { font-size: 2rem; font-weight: 700; }
 
-        .history { margin-top: 30px; padding: 20px; background: #f8f9ff; border-radius: 12px; max-height: 400px; overflow-y: auto; }
+        .history { margin-top: 30px; padding: 20px; background: #f8f9ff; border-radius: 12px; max-height: 400px; overflow-y: auto; display: none; }
+        .history.show { display: block; }
         .history h3 { color: #667eea; margin-bottom: 15px; }
         .history-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
-        .history-item-name { font-weight: 600; color: #333; }
-        .history-item-value { color: #667eea; font-weight: 700; font-size: 0.95rem; }
+        .history-item-name { font-weight: 600; }
+        .history-item-value { color: #667eea; font-weight: 700; margin: 5px 0; }
         .history-btns { display: flex; gap: 5px; margin-top: 8px; }
-        .history-btns button { padding: 5px 10px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
+        .history-btns button { padding: 5px 12px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
         .load-btn { background: #667eea; color: white; }
         .delete-btn { background: #ff6b6b; color: white; }
 
         .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; background: #667eea; color: white; border-radius: 8px; z-index: 1000; display: none; }
-        .toast.show { display: block; animation: slideIn 0.3s; }
+        .toast.show { display: block; }
         .toast.success { background: #43e97b; }
         .toast.error { background: #ff6b6b; }
-        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } .auth-box input { width: 100%; } .auth-box button { margin-left: 0; margin-top: 10px; } }
     </style>
 </head>
 <body>
@@ -66,9 +66,10 @@
             <p>Calculate your wealth growth with compound interest</p>
         </div>
 
-        <div class="auth-section">
-            <button id="googleBtn" onclick="googleSignIn()">🔵 Sign In with Google</button>
-            <button id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
+        <div class="auth-box">
+            <input type="email" id="emailInput" placeholder="Enter your email" autocomplete="email">
+            <button onclick="login()">Sign In</button>
+            <button class="logout-btn" id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
             <div class="user-info" id="userInfo"></div>
         </div>
 
@@ -100,7 +101,7 @@
                 <button class="btn btn-primary" onclick="calculate()">Calculate</button>
                 <button class="btn btn-primary" id="saveBtn" onclick="saveCalculation()" style="display: none;">💾 Save to Firebase</button>
 
-                <div class="history" id="history" style="display: none;">
+                <div class="history" id="history">
                     <h3>📊 Your Saved Calculations</h3>
                     <div id="historyList"></div>
                 </div>
@@ -131,18 +132,15 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCb_V7WGMkkPkhMCfXqfTm5Wf-4yyqc2tA",
             authDomain: "expensetracker7-15c2a.firebaseapp.com",
             projectId: "expensetracker7-15c2a",
             storageBucket: "expensetracker7-15c2a.firebasestorage.app",
             messagingSenderId: "1037918445507",
-            appId: "1:1037918445507:web:e43764d4e7a695ecf66776",
-            measurementId: "G-V4JPBQ4933"
+            appId: "1:1037918445507:web:e43764d4e7a695ecf66776"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -150,62 +148,65 @@
         let currentUser = null;
         let lastCalculation = null;
 
-        // Monitor auth state
         auth.onAuthStateChanged(user => {
             currentUser = user;
-            updateAuthUI();
+            updateUI();
             if (user) loadHistory();
         });
 
-        function updateAuthUI() {
-            const googleBtn = document.getElementById('googleBtn');
+        function updateUI() {
+            const emailInput = document.getElementById('emailInput');
+            const signinBtn = emailInput.nextElementSibling;
             const logoutBtn = document.getElementById('logoutBtn');
             const userInfo = document.getElementById('userInfo');
             const saveBtn = document.getElementById('saveBtn');
             const history = document.getElementById('history');
 
             if (currentUser) {
-                googleBtn.style.display = 'none';
-                logoutBtn.style.display = 'block';
-                userInfo.textContent = '✅ Logged in as: ' + currentUser.displayName;
+                emailInput.style.display = 'none';
+                signinBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                userInfo.textContent = '✅ Logged in as: ' + localStorage.getItem('userEmail');
                 saveBtn.style.display = 'block';
-                history.style.display = 'block';
+                history.classList.add('show');
             } else {
-                googleBtn.style.display = 'block';
+                emailInput.style.display = 'inline-block';
+                signinBtn.style.display = 'inline-block';
                 logoutBtn.style.display = 'none';
                 userInfo.textContent = '';
                 saveBtn.style.display = 'none';
-                history.style.display = 'none';
+                history.classList.remove('show');
             }
         }
 
-        function googleSignIn() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('profile');
-            provider.addScope('email');
+        function login() {
+            const email = document.getElementById('emailInput').value.trim();
 
-            auth.signInWithRedirect(provider).catch(error => {
-                console.error('Sign-in error:', error);
-                showToast('Error: ' + error.message, 'error');
-            });
-        }
-
-        // Handle redirect result
-        auth.getRedirectResult().then(result => {
-            if (result.user) {
-                showToast('✅ Signed in as ' + result.user.displayName, 'success');
+            if (!email || !email.includes('@')) {
+                showToast('Enter valid email', 'error');
+                return;
             }
-        }).catch(error => {
-            console.error('Redirect error:', error);
-        });
+
+            auth.signInAnonymously().then(result => {
+                localStorage.setItem('userEmail', email);
+                localStorage.setItem('userID', result.user.uid);
+
+                db.collection('users').doc(result.user.uid).set({
+                    email: email,
+                    loginTime: firebase.firestore.Timestamp.now()
+                }, { merge: true });
+
+                showToast('✅ Logged in as ' + email, 'success');
+                document.getElementById('emailInput').value = '';
+            }).catch(err => showToast('Error: ' + err.message, 'error'));
+        }
 
         function logout() {
-            auth.signOut()
-                .then(() => {
-                    currentUser = null;
-                    showToast('👋 Logged out', 'success');
-                })
-                .catch(error => showToast('Error: ' + error.message, 'error'));
+            auth.signOut();
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userID');
+            currentUser = null;
+            showToast('Logged out', 'success');
         }
 
         function calculate() {
@@ -233,8 +234,7 @@
                 initial, monthly, returnRate, duration,
                 totalInvested: Math.round(totalInvested),
                 interest: Math.round(interest),
-                finalValue: Math.round(finalValue),
-                timestamp: new Date().toLocaleDateString()
+                finalValue: Math.round(finalValue)
             };
 
             document.getElementById('resultInvested').textContent = '₹' + lastCalculation.totalInvested.toLocaleString('en-IN');
@@ -244,26 +244,21 @@
 
         function saveCalculation() {
             if (!currentUser) {
-                showToast('Please sign in first', 'error');
+                showToast('Please sign in', 'error');
                 return;
             }
 
-            const name = prompt('Enter a name for this calculation:');
+            const name = prompt('Name this calculation:');
             if (!name) return;
 
             db.collection('users').doc(currentUser.uid).collection('calculations').add({
                 name: name,
                 ...lastCalculation,
                 createdAt: firebase.firestore.Timestamp.now()
-            })
-            .then(() => {
-                showToast('✅ Saved to Firebase!', 'success');
+            }).then(() => {
+                showToast('✅ Saved!', 'success');
                 loadHistory();
-            })
-            .catch(error => {
-                console.error('Save error:', error);
-                showToast('Error: ' + error.message, 'error');
-            });
+            }).catch(err => showToast('Error: ' + err.message, 'error'));
         }
 
         function loadHistory() {
@@ -276,7 +271,7 @@
                     list.innerHTML = '';
 
                     if (snapshot.empty) {
-                        list.innerHTML = '<p style="color: #999; text-align: center;">No saved calculations yet</p>';
+                        list.innerHTML = '<p style="color: #999;">No saved calculations</p>';
                         return;
                     }
 
@@ -303,15 +298,14 @@
             document.getElementById('return').value = returnRate;
             document.getElementById('years').value = duration;
             calculate();
-            showToast('✅ Calculation loaded', 'success');
+            showToast('✅ Loaded', 'success');
         }
 
         function deleteCalc(docId) {
-            if (!confirm('Delete this calculation?')) return;
-
+            if (!confirm('Delete?')) return;
             db.collection('users').doc(currentUser.uid).collection('calculations').doc(docId).delete()
                 .then(() => showToast('✅ Deleted', 'success'))
-                .catch(error => showToast('Error: ' + error.message, 'error'));
+                .catch(err => showToast('Error', 'error'));
         }
 
         function showToast(msg, type = 'success') {
@@ -321,7 +315,6 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // Initial calculation
         calculate();
     </script>
 </body>
