@@ -181,15 +181,23 @@
 
         function googleSignIn() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then(result => {
-                    showToast('✅ Signed in as ' + result.user.displayName, 'success');
-                })
-                .catch(error => {
-                    console.error('Sign-in error:', error);
-                    showToast('Error: ' + error.message, 'error');
-                });
+            provider.addScope('profile');
+            provider.addScope('email');
+
+            auth.signInWithRedirect(provider).catch(error => {
+                console.error('Sign-in error:', error);
+                showToast('Error: ' + error.message, 'error');
+            });
         }
+
+        // Handle redirect result
+        auth.getRedirectResult().then(result => {
+            if (result.user) {
+                showToast('✅ Signed in as ' + result.user.displayName, 'success');
+            }
+        }).catch(error => {
+            console.error('Redirect error:', error);
+        });
 
         function logout() {
             auth.signOut()
