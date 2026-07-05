@@ -202,17 +202,39 @@
 
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('profile');
+            provider.addScope('email');
 
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    toast('✅ Logged in as ' + result.user.displayName + '!', 'success');
-                    closeAuthModal();
-                })
+            console.log('Starting Google Sign-In...');
+
+            auth.signInWithRedirect(provider)
                 .catch((error) => {
                     console.error('Google login error:', error);
-                    toast('Error: ' + error.message, 'error');
+                    console.error('Error code:', error.code);
+                    console.error('Error message:', error.message);
+
+                    if (error.code === 'auth/operation-not-supported-in-this-environment') {
+                        toast('⚠️ Google Sign-In not configured. Check Firebase console.', 'error');
+                    } else if (error.code === 'auth/popup-blocked') {
+                        toast('⚠️ Popup blocked. Please allow popups and try again.', 'error');
+                    } else {
+                        toast('Error: ' + error.message, 'error');
+                    }
                 });
         }
+
+        // Handle redirect sign-in result
+        auth.getRedirectResult()
+            .then((result) => {
+                if (result.user) {
+                    console.log('Successfully logged in:', result.user.displayName);
+                    toast('✅ Logged in as ' + result.user.displayName + '!', 'success');
+                    closeAuthModal();
+                }
+            })
+            .catch((error) => {
+                console.error('Redirect result error:', error);
+            });
 
         function logout() {
             auth.signOut().then(() => {
