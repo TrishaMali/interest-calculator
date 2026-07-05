@@ -124,13 +124,11 @@
     <!-- Login Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
-            <h2>Login / Sign Up</h2>
-            <input type="email" id="email" class="modal-input" placeholder="Email" autocomplete="email">
-            <input type="password" id="password" class="modal-input" placeholder="Password" autocomplete="current-password">
-            <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="login()">Login</button>
-                <button class="modal-btn primary" onclick="signup()">Sign Up</button>
-            </div>
+            <h2>Sign In with Google</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">Click below to login with your Google account</p>
+            <button class="modal-btn primary" onclick="googleLogin()" style="background: linear-gradient(135deg, #4285F4 0%, #34A853 100%); font-size: 1.1rem;">
+                🔵 Sign In with Google
+            </button>
             <button class="modal-btn secondary" onclick="closeAuthModal()" style="width: 100%; margin-top: 10px;">Close</button>
         </div>
     </div>
@@ -200,47 +198,20 @@
 
         function closeAuthModal() {
             document.getElementById('authModal').classList.remove('active');
-            document.getElementById('email').value = '';
-            document.getElementById('password').value = '';
         }
 
-        function login() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
 
-            if (!email || !password) {
-                toast('Please enter email and password', 'error');
-                return;
-            }
-
-            auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    toast('✅ Logged in!', 'success');
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    toast('✅ Logged in as ' + result.user.displayName + '!', 'success');
                     closeAuthModal();
                 })
-                .catch(err => toast(err.message, 'error'));
-        }
-
-        function signup() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-
-            if (!email || !password) {
-                toast('Please enter email and password', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                toast('Password must be at least 6 characters', 'error');
-                return;
-            }
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
-                    toast('✅ Account created!', 'success');
-                    closeAuthModal();
-                })
-                .catch(err => toast(err.message, 'error'));
+                .catch((error) => {
+                    console.error('Google login error:', error);
+                    toast('Error: ' + error.message, 'error');
+                });
         }
 
         function logout() {
@@ -395,11 +366,11 @@
             if (event.target === saveModal) closeSaveModal();
         }
 
-        // Enter key on inputs
-        document.getElementById('initialAmount').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
-        document.getElementById('monthlyInvestment').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
-        document.getElementById('annualReturn').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
-        document.getElementById('duration').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
+        // Real-time calculation on input change
+        document.getElementById('initialAmount').addEventListener('input', calculate);
+        document.getElementById('monthlyInvestment').addEventListener('input', calculate);
+        document.getElementById('annualReturn').addEventListener('input', calculate);
+        document.getElementById('duration').addEventListener('input', calculate);
 
         // Initial calculation
         calculate();
