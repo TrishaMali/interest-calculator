@@ -937,7 +937,18 @@
             document.getElementById('totalBarValue').textContent = formatCurrency(finalValue);
         }
 
-        // Calculate on input change
+        // Calculate on input change (real-time)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('initialAmount').addEventListener('input', calculateInterest);
+            document.getElementById('monthlyInvestment').addEventListener('input', calculateInterest);
+            document.getElementById('annualReturn').addEventListener('input', calculateInterest);
+            document.getElementById('duration').addEventListener('input', calculateInterest);
+
+            // Initial calculation
+            calculateInterest();
+        });
+
+        // Also support change events
         document.getElementById('initialAmount').addEventListener('change', calculateInterest);
         document.getElementById('monthlyInvestment').addEventListener('change', calculateInterest);
         document.getElementById('annualReturn').addEventListener('change', calculateInterest);
@@ -988,9 +999,6 @@
         document.getElementById('calcName').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') confirmSave();
         });
-
-        // Initial calculation
-        calculateInterest();
     </script>
 </body>
 </html>
