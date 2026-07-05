@@ -9,50 +9,42 @@
     <script src="https://www.gstatic.com/firebasejs/compat/auth.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
         .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 900px; margin: 0 auto; overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        .header p { font-size: 1.1rem; opacity: 0.9; }
-        .auth-info { background: rgba(0,0,0,0.1); padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.95rem; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .auth-box { background: rgba(0,0,0,0.1); padding: 15px; border-radius: 8px; margin-top: 15px; display: flex; gap: 10px; align-items: center; }
+        .auth-box input { flex: 1; padding: 10px; border: none; border-radius: 5px; font-size: 0.95rem; }
+        .auth-box button { padding: 10px 20px; background: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; color: #667eea; }
+        .auth-box button:hover { background: #f0f0f0; }
         .content { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; }
-        .input-section h2 { color: #667eea; margin-bottom: 25px; font-size: 1.5rem; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
-        .input-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; }
-        .input-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
+        .section h2 { color: #667eea; margin-bottom: 20px; font-size: 1.5rem; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; color: #333; font-weight: 600; font-size: 0.9rem; }
+        .input-group input { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; }
+        .input-group input:focus { outline: none; border-color: #667eea; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }
+        .btn-primary:hover { opacity: 0.9; }
         .btn-secondary { background: #e0e0e0; color: #333; }
         .btn-secondary:hover { background: #d0d0d0; }
-        .btn-danger { background: #ff6b6b; color: white; }
-        .btn-danger:hover { background: #ff5252; }
-        .results-section h2 { color: #667eea; margin-bottom: 25px; font-size: 1.5rem; }
         .result-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; padding: 20px; margin-bottom: 15px; color: white; }
         .result-card.card-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
         .result-card.card-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        .result-card h3 { font-size: 0.9rem; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; }
-        .result-value { font-size: 2rem; font-weight: 700; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; padding: 40px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-        .modal-content h2 { color: #667eea; margin-bottom: 20px; text-align: center; }
-        .modal-input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; }
-        .modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .modal-btn { padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-        .modal-btn.primary { background: #667eea; color: white; }
-        .modal-btn.secondary { background: #e0e0e0; color: #333; }
+        .result-card h3 { font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px; }
+        .result-value { font-size: 1.8rem; font-weight: 700; }
+        .history { margin-top: 20px; padding: 15px; background: #f8f9ff; border-radius: 8px; max-height: 300px; overflow-y: auto; }
+        .history-item { padding: 10px; background: white; border-left: 4px solid #667eea; margin-bottom: 10px; border-radius: 4px; }
+        .history-item-title { font-weight: 600; }
+        .history-item-buttons { display: flex; gap: 5px; margin-top: 8px; }
+        .history-item-buttons button { padding: 5px 10px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
+        .history-item-buttons .load { background: #667eea; color: white; }
+        .history-item-buttons .delete { background: #ff6b6b; color: white; }
         .toast { display: none; position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; background: #667eea; color: white; border-radius: 8px; z-index: 2000; }
         .toast.active { display: block; }
         .toast.success { background: #43e97b; }
         .toast.error { background: #ff6b6b; }
-        .history-item { background: #f8f9ff; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
-        .history-item-title { font-weight: 600; color: #333; margin-bottom: 5px; }
-        .history-item-value { color: #667eea; font-weight: 700; }
-        .history-buttons { display: flex; gap: 10px; margin-top: 10px; }
-        .history-buttons button { padding: 6px 12px; font-size: 0.85rem; border: none; border-radius: 5px; cursor: pointer; }
-        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } .auth-box { flex-direction: column; } .auth-box input { margin-bottom: 10px; } }
     </style>
 </head>
 <body>
@@ -60,44 +52,50 @@
         <div class="header">
             <h1>💰 Compound Interest Calculator</h1>
             <p>Calculate your wealth growth with compound interest</p>
-            <div class="auth-info">
-                <div id="authStatus">Not logged in</div>
-                <button class="btn btn-secondary" id="authBtn" onclick="openAuthModal()">🔐 Login</button>
+            <div class="auth-box">
+                <input type="email" id="emailInput" placeholder="Enter your email (e.g., john@gmail.com)" autocomplete="email">
+                <button onclick="login()">Sign In</button>
+                <button id="logoutBtn" onclick="logout()" style="display: none; background: #ff6b6b; color: white;">Logout</button>
             </div>
+            <p id="userStatus" style="margin-top: 10px; font-size: 0.9rem;">Not logged in</p>
         </div>
 
         <div class="content">
             <!-- Input Section -->
-            <div class="input-section">
+            <div class="section">
                 <h2>Investment Details</h2>
 
                 <div class="input-group">
                     <label>Initial Amount (₹)</label>
-                    <input type="number" id="initialAmount" value="100000" min="0" step="1000">
+                    <input type="number" id="initialAmount" value="100000" min="0" step="1000" oninput="calculate()">
                 </div>
 
                 <div class="input-group">
                     <label>Monthly Investment (₹)</label>
-                    <input type="number" id="monthlyInvestment" value="5000" min="0" step="1000">
+                    <input type="number" id="monthlyAmount" value="5000" min="0" step="1000" oninput="calculate()">
                 </div>
 
                 <div class="input-group">
                     <label>Annual Return (%)</label>
-                    <input type="number" id="annualReturn" value="12" min="0" max="100" step="0.1">
+                    <input type="number" id="returnRate" value="12" min="0" max="100" step="0.1" oninput="calculate()">
                 </div>
 
                 <div class="input-group">
                     <label>Duration (Years)</label>
-                    <input type="number" id="duration" value="20" min="1" step="1">
+                    <input type="number" id="duration" value="20" min="1" step="1" oninput="calculate()">
                 </div>
 
                 <button class="btn btn-primary" onclick="calculate()">Calculate</button>
-                <button class="btn btn-primary" id="saveBtn" onclick="openSaveModal()" style="display:none;">💾 Save to Firestore</button>
-                <button class="btn btn-danger" id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
+                <button class="btn btn-secondary" id="saveBtn" onclick="saveCalculation()" style="display: none;">💾 Save to Firestore</button>
+
+                <div class="history" id="history" style="display: none;">
+                    <h3 style="margin-bottom: 10px;">📊 Your Saved Calculations</h3>
+                    <div id="historyList"></div>
+                </div>
             </div>
 
             <!-- Results Section -->
-            <div class="results-section">
+            <div class="section">
                 <h2>Your Results</h2>
 
                 <div class="result-card">
@@ -114,32 +112,6 @@
                     <h3>Final Portfolio Value</h3>
                     <div class="result-value" id="resultFinal">₹0</div>
                 </div>
-
-                <h3 style="color: #667eea; margin-top: 30px;">Saved Calculations</h3>
-                <div id="historyList" style="max-height: 300px; overflow-y: auto;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Login Modal -->
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <h2>Enter Your Email</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 20px;">No password needed - just enter your email to save calculations</p>
-            <input type="email" id="userEmail" class="modal-input" placeholder="your.email@gmail.com" autocomplete="email">
-            <button class="modal-btn primary" onclick="loginWithEmail()" style="width: 100%;">Sign In</button>
-            <button class="modal-btn secondary" onclick="closeAuthModal()" style="width: 100%; margin-top: 10px;">Close</button>
-        </div>
-    </div>
-
-    <!-- Save Modal -->
-    <div id="saveModal" class="modal">
-        <div class="modal-content">
-            <h2>Save Calculation</h2>
-            <input type="text" id="saveName" class="modal-input" placeholder="e.g., Retirement Plan">
-            <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="saveToFirestore()">Save</button>
-                <button class="modal-btn secondary" onclick="closeSaveModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -148,7 +120,6 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCb_V7WGMkkPkhMCfXqfTm5Wf-4yyqc2tA",
             authDomain: "expensetracker7-15c2a.firebaseapp.com",
@@ -165,84 +136,72 @@
         let currentUser = null;
         let lastCalculation = null;
 
-        // Check auth state
+        // Check if user already logged in
         auth.onAuthStateChanged(user => {
-            currentUser = user;
-            updateUI();
-            if (user) loadHistory();
+            if (user) {
+                currentUser = user;
+                const userEmail = localStorage.getItem('userEmail');
+                document.getElementById('userStatus').textContent = '✅ Logged in as: ' + userEmail;
+                document.getElementById('emailInput').style.display = 'none';
+                document.getElementById('emailInput').previousElementSibling.style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('saveBtn').style.display = 'block';
+                document.getElementById('history').style.display = 'block';
+                loadHistory();
+            }
         });
 
-        function updateUI() {
-            const status = document.getElementById('authStatus');
-            const saveBtn = document.getElementById('saveBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const authBtn = document.getElementById('authBtn');
-            const userEmail = localStorage.getItem('userEmail');
-
-            if (currentUser || userEmail) {
-                status.textContent = `👤 Logged in as: ${userEmail || currentUser.email || 'User'}`;
-                saveBtn.style.display = 'block';
-                logoutBtn.style.display = 'block';
-                authBtn.style.display = 'none';
-            } else {
-                status.textContent = '❌ Not logged in';
-                saveBtn.style.display = 'none';
-                logoutBtn.style.display = 'none';
-                authBtn.style.display = 'block';
-            }
-        }
-
-        function openAuthModal() {
-            document.getElementById('authModal').classList.add('active');
-        }
-
-        function closeAuthModal() {
-            document.getElementById('authModal').classList.remove('active');
-            document.getElementById('userEmail').value = '';
-        }
-
-        function loginWithEmail() {
-            const email = document.getElementById('userEmail').value.trim();
+        function login() {
+            const email = document.getElementById('emailInput').value.trim();
 
             if (!email || !email.includes('@')) {
-                toast('Please enter a valid email', 'error');
+                showToast('Please enter a valid email', 'error');
                 return;
             }
 
-            // Sign in anonymously and store email in localStorage
             auth.signInAnonymously()
                 .then((result) => {
-                    // Store email in Firestore user profile
-                    return db.collection('users').doc(result.user.uid).set({
-                        email: email,
-                        loginTime: firebase.firestore.Timestamp.now(),
-                        displayName: email.split('@')[0]
-                    }, { merge: true })
-                    .then(() => {
-                        // Also store in localStorage for quick access
-                        localStorage.setItem('userEmail', email);
-                        localStorage.setItem('userID', result.user.uid);
+                    currentUser = result.user;
+                    localStorage.setItem('userEmail', email);
+                    localStorage.setItem('userID', result.user.uid);
 
-                        toast('✅ Logged in as ' + email + '!', 'success');
-                        closeAuthModal();
-                    });
+                    db.collection('users').doc(result.user.uid).set({
+                        email: email,
+                        loginTime: firebase.firestore.Timestamp.now()
+                    }, { merge: true });
+
+                    document.getElementById('userStatus').textContent = '✅ Logged in as: ' + email;
+                    document.getElementById('emailInput').value = '';
+                    document.getElementById('emailInput').style.display = 'none';
+                    document.getElementById('emailInput').previousElementSibling.style.display = 'none';
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    document.getElementById('saveBtn').style.display = 'block';
+                    document.getElementById('history').style.display = 'block';
+
+                    showToast('✅ Logged in as ' + email, 'success');
+                    loadHistory();
                 })
-                .catch((error) => {
-                    console.error('Login error:', error);
-                    toast('Error: ' + error.message, 'error');
-                });
+                .catch(err => showToast('Error: ' + err.message, 'error'));
         }
 
         function logout() {
-            auth.signOut().then(() => {
-                toast('👋 Logged out', 'success');
-            });
+            auth.signOut();
+            currentUser = null;
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userID');
+            document.getElementById('userStatus').textContent = 'Not logged in';
+            document.getElementById('emailInput').style.display = 'block';
+            document.getElementById('emailInput').previousElementSibling.style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'none';
+            document.getElementById('history').style.display = 'none';
+            showToast('Logged out', 'success');
         }
 
         function calculate() {
             const initial = parseFloat(document.getElementById('initialAmount').value) || 0;
-            const monthly = parseFloat(document.getElementById('monthlyInvestment').value) || 0;
-            const rate = parseFloat(document.getElementById('annualReturn').value) || 0;
+            const monthly = parseFloat(document.getElementById('monthlyAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('returnRate').value) || 0;
             const years = parseFloat(document.getElementById('duration').value) || 0;
 
             const totalInvested = initial + (monthly * 12 * years);
@@ -260,65 +219,36 @@
             const finalValue = lumpSumFV + monthlyFV;
             const interest = finalValue - totalInvested;
 
-            lastCalculation = {
-                initial, monthly, rate, years,
-                totalInvested, interest, finalValue
-            };
+            lastCalculation = { initial, monthly, rate, years, totalInvested, interest, finalValue };
 
             document.getElementById('resultInvested').textContent = '₹' + totalInvested.toLocaleString('en-IN');
-            document.getElementById('resultInterest').textContent = '₹' + interest.toLocaleString('en-IN');
-            document.getElementById('resultFinal').textContent = '₹' + finalValue.toLocaleString('en-IN');
+            document.getElementById('resultInterest').textContent = '₹' + Math.round(interest).toLocaleString('en-IN');
+            document.getElementById('resultFinal').textContent = '₹' + Math.round(finalValue).toLocaleString('en-IN');
         }
 
-        function openSaveModal() {
+        function saveCalculation() {
             if (!currentUser) {
-                toast('Please login first', 'error');
-                return;
-            }
-            document.getElementById('saveModal').classList.add('active');
-        }
-
-        function closeSaveModal() {
-            document.getElementById('saveModal').classList.remove('active');
-            document.getElementById('saveName').value = '';
-        }
-
-        function saveToFirestore() {
-            const name = document.getElementById('saveName').value.trim();
-
-            if (!name) {
-                toast('Please enter a name', 'error');
+                showToast('Please login first', 'error');
                 return;
             }
 
-            if (!currentUser) {
-                toast('Not logged in', 'error');
-                return;
-            }
-
-            console.log('Saving to Firestore:', { name, ...lastCalculation });
+            const name = prompt('Enter a name for this calculation (e.g., Retirement Plan):');
+            if (!name) return;
 
             db.collection('users').doc(currentUser.uid).collection('calculations').add({
-                name,
+                name: name,
                 ...lastCalculation,
                 timestamp: firebase.firestore.Timestamp.now()
             })
             .then(() => {
-                toast('✅ Saved to Firestore!', 'success');
-                closeSaveModal();
+                showToast('✅ Saved to Firestore!', 'success');
                 loadHistory();
             })
-            .catch(err => {
-                console.error('Save error:', err);
-                toast('Error: ' + err.message, 'error');
-            });
+            .catch(err => showToast('Error: ' + err.message, 'error'));
         }
 
         function loadHistory() {
-            if (!currentUser) {
-                document.getElementById('historyList').innerHTML = '';
-                return;
-            }
+            if (!currentUser) return;
 
             db.collection('users').doc(currentUser.uid).collection('calculations')
                 .orderBy('timestamp', 'desc')
@@ -327,69 +257,49 @@
                     list.innerHTML = '';
 
                     if (snapshot.empty) {
-                        list.innerHTML = '<p style="color: #999;">No saved calculations</p>';
+                        list.innerHTML = '<p style="color: #999;">No saved calculations yet</p>';
                         return;
                     }
 
                     snapshot.forEach(doc => {
                         const calc = doc.data();
-                        const item = document.createElement('div');
-                        item.className = 'history-item';
-                        item.innerHTML = `
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        div.innerHTML = `
                             <div class="history-item-title">${calc.name}</div>
-                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 8px;">
-                                Initial: ₹${calc.totalInvested.toLocaleString('en-IN')} | Final: <strong>₹${calc.finalValue.toLocaleString('en-IN')}</strong>
-                            </div>
-                            <div class="history-buttons">
-                                <button class="btn btn-secondary" onclick="loadCalculation(${calc.initial}, ${calc.monthly}, ${calc.rate}, ${calc.years})" style="padding: 6px 12px; width: auto;">Load</button>
-                                <button class="btn btn-danger" onclick="deleteCalculation('${doc.id}')" style="padding: 6px 12px; width: auto;">Delete</button>
+                            <div style="font-size: 0.85rem; color: #666;">Final: <strong>₹${Math.round(calc.finalValue).toLocaleString('en-IN')}</strong></div>
+                            <div class="history-item-buttons">
+                                <button class="load" onclick="loadCalc(${calc.initial}, ${calc.monthly}, ${calc.rate}, ${calc.years})">Load</button>
+                                <button class="delete" onclick="deleteCalc('${doc.id}')">Delete</button>
                             </div>
                         `;
-                        list.appendChild(item);
+                        list.appendChild(div);
                     });
                 });
         }
 
-        function loadCalculation(initial, monthly, rate, years) {
+        function loadCalc(initial, monthly, rate, years) {
             document.getElementById('initialAmount').value = initial;
-            document.getElementById('monthlyInvestment').value = monthly;
-            document.getElementById('annualReturn').value = rate;
+            document.getElementById('monthlyAmount').value = monthly;
+            document.getElementById('returnRate').value = rate;
             document.getElementById('duration').value = years;
             calculate();
-            toast('✅ Calculation loaded!', 'success');
+            showToast('✅ Calculation loaded', 'success');
         }
 
-        function deleteCalculation(docId) {
+        function deleteCalc(docId) {
             if (!confirm('Delete this calculation?')) return;
-
             db.collection('users').doc(currentUser.uid).collection('calculations').doc(docId).delete()
-                .then(() => {
-                    toast('✅ Deleted!', 'success');
-                    loadHistory();
-                })
-                .catch(err => toast('Error: ' + err.message, 'error'));
+                .then(() => showToast('✅ Deleted', 'success'))
+                .catch(err => showToast('Error: ' + err.message, 'error'));
         }
 
-        function toast(msg, type = 'success') {
+        function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
             t.textContent = msg;
             t.className = 'toast active ' + type;
             setTimeout(() => t.classList.remove('active'), 3000);
         }
-
-        // Click outside modal to close
-        window.onclick = function(event) {
-            const authModal = document.getElementById('authModal');
-            const saveModal = document.getElementById('saveModal');
-            if (event.target === authModal) closeAuthModal();
-            if (event.target === saveModal) closeSaveModal();
-        }
-
-        // Real-time calculation on input change
-        document.getElementById('initialAmount').addEventListener('input', calculate);
-        document.getElementById('monthlyInvestment').addEventListener('input', calculate);
-        document.getElementById('annualReturn').addEventListener('input', calculate);
-        document.getElementById('duration').addEventListener('input', calculate);
 
         // Initial calculation
         calculate();
