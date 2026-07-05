@@ -637,7 +637,7 @@
     <div id="toast" class="toast"></div>
 
     <script src="https://www.gstatic.com/firebasejs/compat/app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/compat/database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/compat/firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/compat/auth.js"></script>
 
     <script>
@@ -652,12 +652,12 @@
             measurementId: "G-V4JPBQ4933"
         };
 
-        let auth, database, currentUser = null, lastCalculation = null;
+        let auth, db, currentUser = null, lastCalculation = null;
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         auth = firebase.auth();
-        database = firebase.database();
+        db = firebase.firestore();
 
         // Auth state listener
         auth.onAuthStateChanged(user => {
@@ -745,38 +745,39 @@
         function loadCalculationHistory() {
             if (!currentUser) return;
 
-            database.ref('users/' + currentUser.uid + '/calculations').orderByChild('timestamp').once('value', snapshot => {
-                const historyList = document.getElementById('historyList');
-                historyList.innerHTML = '';
+            db.collection('users').doc(currentUser.uid).collection('calculations')
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    const historyList = document.getElementById('historyList');
+                    historyList.innerHTML = '';
 
-                if (!snapshot.exists()) {
-                    historyList.innerHTML = '<div class="empty-history">No saved calculations yet. Create and save one!</div>';
-                    return;
-                }
+                    if (snapshot.empty) {
+                        historyList.innerHTML = '<div class="empty-history">No saved calculations yet. Create and save one!</div>';
+                        return;
+                    }
 
-                const calculations = snapshot.val();
-                const items = Object.entries(calculations).reverse();
-
-                items.forEach(([key, calc]) => {
-                    const date = new Date(calc.timestamp).toLocaleDateString();
-                    const item = document.createElement('div');
-                    item.className = 'history-item';
-                    item.innerHTML = `
-                        <div class="history-item-content">
-                            <div class="history-item-title">${calc.name}</div>
-                            <div class="history-item-details">
-                                Initial: ${formatCurrency(calc.initialAmount)} | Monthly: ${formatCurrency(calc.monthlyInvestment)} | Return: ${calc.annualReturn}% | Duration: ${calc.duration}y
+                    snapshot.forEach(doc => {
+                        const calc = doc.data();
+                        const date = new Date(calc.timestamp.toDate()).toLocaleDateString();
+                        const item = document.createElement('div');
+                        item.className = 'history-item';
+                        item.innerHTML = `
+                            <div class="history-item-content">
+                                <div class="history-item-title">${calc.name}</div>
+                                <div class="history-item-details">
+                                    Initial: ${formatCurrency(calc.initialAmount)} | Monthly: ${formatCurrency(calc.monthlyInvestment)} | Return: ${calc.annualReturn}% | Duration: ${calc.duration}y
+                                </div>
+                                <div class="history-item-value">Final: ${formatCurrency(calc.finalValue)}</div>
                             </div>
-                            <div class="history-item-value">Final: ${formatCurrency(calc.finalValue)}</div>
-                        </div>
-                        <div class="history-item-buttons">
-                            <button class="history-btn history-btn-load" onclick="loadCalculation(${calc.initialAmount}, ${calc.monthlyInvestment}, ${calc.annualReturn}, ${calc.duration})">Load</button>
-                            <button class="history-btn history-btn-delete" onclick="deleteCalculation('${key}')">Delete</button>
-                        </div>
-                    `;
-                    historyList.appendChild(item);
-                });
-            });
+                            <div class="history-item-buttons">
+                                <button class="history-btn history-btn-load" onclick="loadCalculation(${calc.initialAmount}, ${calc.monthlyInvestment}, ${calc.annualReturn}, ${calc.duration})">Load</button>
+                                <button class="history-btn history-btn-delete" onclick="deleteCalculation('${doc.id}')">Delete</button>
+                            </div>
+                        `;
+                        historyList.appendChild(item);
+                    });
+                })
+                .catch(err => console.error("Error loading history:", err));
         }
 
         function loadCalculation(initial, monthly, rate, years) {
@@ -788,13 +789,15 @@
             showToast('Calculation loaded!', 'success');
         }
 
-        function deleteCalculation(key) {
+        function deleteCalculation(docId) {
             if (!confirm('Delete this calculation?')) return;
 
-            database.ref('users/' + currentUser.uid + '/calculations/' + key).remove().then(() => {
-                showToast('Calculation deleted!', 'success');
-                loadCalculationHistory();
-            }).catch(err => showToast(err.message, 'error'));
+            db.collection('users').doc(currentUser.uid).collection('calculations').doc(docId).delete()
+                .then(() => {
+                    showToast('✅ Calculation deleted!', 'success');
+                    loadCalculationHistory();
+                })
+                .catch(err => showToast(err.message, 'error'));
         }
 
         function saveCalculation() {
@@ -817,7 +820,7 @@
                 return;
             }
 
-            database.ref('users/' + currentUser.uid + '/calculations').push({
+            db.collection('users').doc(currentUser.uid).collection('calculations').add({
                 name,
                 initialAmount: lastCalculation.initialAmount,
                 monthlyInvestment: lastCalculation.monthlyInvestment,
@@ -827,9 +830,9 @@
                 interestEarned: lastCalculation.interestEarned,
                 finalValue: lastCalculation.finalValue,
                 returnPercent: lastCalculation.returnPercent,
-                timestamp: new Date().toISOString()
+                timestamp: firebase.firestore.Timestamp.now()
             }).then(() => {
-                showToast('✅ Calculation saved to Firebase!', 'success');
+                showToast('✅ Calculation saved to Firestore!', 'success');
                 closeModal();
                 document.getElementById('calcName').value = '';
                 loadCalculationHistory();
