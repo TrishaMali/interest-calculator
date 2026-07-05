@@ -4,499 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compound Interest Calculator</title>
+    <script src="https://www.gstatic.com/firebasejs/compat/app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/compat/firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/compat/auth.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 30px;
-            text-align: center;
-            position: relative;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .auth-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            color: white;
-            transition: all 0.3s;
-        }
-
-        .auth-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            padding: 40px;
-        }
-
-        .input-section h2 {
-            color: #667eea;
-            margin-bottom: 25px;
-            font-size: 1.5rem;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .calculate-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 15px;
-        }
-
-        .calculate-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .calculate-btn:active {
-            transform: translateY(0);
-        }
-
-        .save-button {
-            padding: 12px;
-            background: #43e97b;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            width: 100%;
-            transition: all 0.3s;
-            display: none;
-        }
-
-        .save-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(67, 233, 123, 0.4);
-        }
-
-        .results-section h2 {
-            color: #667eea;
-            margin-bottom: 25px;
-            font-size: 1.5rem;
-        }
-
-        .result-card {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            color: white;
-            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
-        }
-
-        .result-card.card-2 {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
-        }
-
-        .result-card.card-3 {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            box-shadow: 0 5px 15px rgba(67, 233, 123, 0.3);
-        }
-
-        .result-card h3 {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .result-value {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-
-        .breakdown {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 2px solid #e0e0e0;
-        }
-
-        .breakdown h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
-
-        .breakdown-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-            color: #555;
-        }
-
-        .breakdown-item:last-child {
-            border-bottom: none;
-        }
-
-        .breakdown-label {
-            font-weight: 600;
-        }
-
-        .breakdown-value {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .chart-container {
-            background: #f8f9ff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .chart-bars {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            height: 250px;
-            gap: 20px;
-        }
-
-        .bar-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100%;
-        }
-
-        .bar {
-            width: 100%;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            border-radius: 8px 8px 0 0;
-            transition: all 0.3s ease;
-            min-height: 10px;
-        }
-
-        .bar:hover {
-            transform: scaleY(1.05);
-            filter: brightness(1.1);
-        }
-
-        .bar-label {
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #666;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .bar-value {
-            font-size: 0.9rem;
-            color: #667eea;
-            font-weight: 700;
-            margin-top: 5px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-content h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-
-        .modal-input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .modal-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .modal-btn {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .modal-btn.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .modal-btn.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .modal-btn.secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .modal-btn.secondary:hover {
-            background: #d0d0d0;
-        }
-
-        .toast {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            background: #667eea;
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            z-index: 2000;
-            animation: slideUp 0.3s ease;
-        }
-
-        .toast.active {
-            display: block;
-        }
-
-        .toast.success {
-            background: #43e97b;
-        }
-
-        .toast.error {
-            background: #ff6b6b;
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .history-item {
-            background: #f8f9ff;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #667eea;
-            transition: all 0.3s;
-        }
-
-        .history-item:hover {
-            background: #f0f2ff;
-            transform: translateX(5px);
-        }
-
-        .history-item-content {
-            flex: 1;
-        }
-
-        .history-item-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .history-item-details {
-            font-size: 0.85rem;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .history-item-value {
-            color: #667eea;
-            font-size: 1rem;
-            font-weight: 700;
-        }
-
-        .history-item-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .history-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .history-btn-load {
-            background: #667eea;
-            color: white;
-        }
-
-        .history-btn-load:hover {
-            background: #764ba2;
-        }
-
-        .history-btn-delete {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .history-btn-delete:hover {
-            background: #ff5252;
-        }
-
-        .empty-history {
-            text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
-        }
-
-        @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
-                gap: 30px;
-                padding: 25px;
-            }
-
-            .header h1 {
-                font-size: 1.8rem;
-            }
-
-            .header p {
-                font-size: 0.95rem;
-            }
-
-            .result-value {
-                font-size: 1.5rem;
-            }
-
-            .chart-bars {
-                height: 180px;
-            }
-
-            .auth-button {
-                position: static;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 900px; margin: 0 auto; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        .auth-info { background: rgba(0,0,0,0.1); padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.95rem; }
+        .content { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; }
+        .input-section h2 { color: #667eea; margin-bottom: 25px; font-size: 1.5rem; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
+        .input-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; }
+        .input-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-secondary:hover { background: #d0d0d0; }
+        .btn-danger { background: #ff6b6b; color: white; }
+        .btn-danger:hover { background: #ff5252; }
+        .results-section h2 { color: #667eea; margin-bottom: 25px; font-size: 1.5rem; }
+        .result-card { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; padding: 20px; margin-bottom: 15px; color: white; }
+        .result-card.card-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .result-card.card-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .result-card h3 { font-size: 0.9rem; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; }
+        .result-value { font-size: 2rem; font-weight: 700; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 40px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-content h2 { color: #667eea; margin-bottom: 20px; text-align: center; }
+        .modal-input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; margin-bottom: 15px; }
+        .modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .modal-btn { padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .modal-btn.primary { background: #667eea; color: white; }
+        .modal-btn.secondary { background: #e0e0e0; color: #333; }
+        .toast { display: none; position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; background: #667eea; color: white; border-radius: 8px; z-index: 2000; }
+        .toast.active { display: block; }
+        .toast.success { background: #43e97b; }
+        .toast.error { background: #ff6b6b; }
+        .history-item { background: #f8f9ff; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
+        .history-item-title { font-weight: 600; color: #333; margin-bottom: 5px; }
+        .history-item-value { color: #667eea; font-weight: 700; }
+        .history-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .history-buttons button { padding: 6px 12px; font-size: 0.85rem; border: none; border-radius: 5px; cursor: pointer; }
+        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -504,12 +60,9 @@
         <div class="header">
             <h1>💰 Compound Interest Calculator</h1>
             <p>Calculate your wealth growth with compound interest</p>
-            <div id="authContainer">
-                <button class="auth-button" id="loginBtn">🔐 Login</button>
-            </div>
-            <div id="userContainer" style="display: none; position: absolute; top: 20px; right: 20px; color: white; text-align: right;">
-                <p id="userEmail" style="margin-bottom: 8px; font-weight: 600;"></p>
-                <button class="auth-button" id="logoutBtn" style="background: rgba(255, 0, 0, 0.3); color: white; border: 1px solid rgba(255, 255, 255, 0.5);">Logout</button>
+            <div class="auth-info">
+                <div id="authStatus">Not logged in</div>
+                <button class="btn btn-secondary" id="authBtn" onclick="openAuthModal()">🔐 Login</button>
             </div>
         </div>
 
@@ -519,27 +72,28 @@
                 <h2>Investment Details</h2>
 
                 <div class="input-group">
-                    <label for="initialAmount">Initial Amount (₹)</label>
-                    <input type="number" id="initialAmount" placeholder="Enter initial investment" value="100000" min="0" step="1000">
+                    <label>Initial Amount (₹)</label>
+                    <input type="number" id="initialAmount" value="100000" min="0" step="1000">
                 </div>
 
                 <div class="input-group">
-                    <label for="monthlyInvestment">Monthly Investment (₹)</label>
-                    <input type="number" id="monthlyInvestment" placeholder="Enter monthly contribution" value="5000" min="0" step="1000">
+                    <label>Monthly Investment (₹)</label>
+                    <input type="number" id="monthlyInvestment" value="5000" min="0" step="1000">
                 </div>
 
                 <div class="input-group">
-                    <label for="annualReturn">Expected Annual Return (%)</label>
-                    <input type="number" id="annualReturn" placeholder="Enter expected return" value="12" min="0" max="100" step="0.1">
+                    <label>Annual Return (%)</label>
+                    <input type="number" id="annualReturn" value="12" min="0" max="100" step="0.1">
                 </div>
 
                 <div class="input-group">
-                    <label for="duration">Investment Duration (Years)</label>
-                    <input type="number" id="duration" placeholder="Enter duration in years" value="20" min="1" step="1">
+                    <label>Duration (Years)</label>
+                    <input type="number" id="duration" value="20" min="1" step="1">
                 </div>
 
-                <button class="calculate-btn" onclick="calculateInterest()">Calculate</button>
-                <button class="save-button" id="saveBtn" onclick="saveCalculation()">💾 Save to Firebase</button>
+                <button class="btn btn-primary" onclick="calculate()">Calculate</button>
+                <button class="btn btn-primary" id="saveBtn" onclick="openSaveModal()" style="display:none;">💾 Save to Firestore</button>
+                <button class="btn btn-danger" id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
             </div>
 
             <!-- Results Section -->
@@ -548,76 +102,36 @@
 
                 <div class="result-card">
                     <h3>Total Amount Invested</h3>
-                    <div class="result-value" id="totalInvested">₹0</div>
+                    <div class="result-value" id="resultInvested">₹0</div>
                 </div>
 
                 <div class="result-card card-2">
                     <h3>Interest Earned</h3>
-                    <div class="result-value" id="interestEarned">₹0</div>
+                    <div class="result-value" id="resultInterest">₹0</div>
                 </div>
 
                 <div class="result-card card-3">
                     <h3>Final Portfolio Value</h3>
-                    <div class="result-value" id="finalValue">₹0</div>
+                    <div class="result-value" id="resultFinal">₹0</div>
                 </div>
 
-                <div class="breakdown">
-                    <h3>Investment Breakdown</h3>
-                    <div class="breakdown-item">
-                        <span class="breakdown-label">Your Contribution:</span>
-                        <span class="breakdown-value" id="contribution">₹0</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span class="breakdown-label">Returns Generated:</span>
-                        <span class="breakdown-value" id="returns">₹0</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span class="breakdown-label">Return %:</span>
-                        <span class="breakdown-value" id="returnPercent">0%</span>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <div class="chart-bars">
-                        <div class="bar-wrapper">
-                            <div class="bar" id="investedBar" style="height: 30%;"></div>
-                            <div class="bar-label">Invested</div>
-                            <div class="bar-value" id="investedBarValue">₹0</div>
-                        </div>
-                        <div class="bar-wrapper">
-                            <div class="bar" id="returnsBar" style="height: 70%; background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);"></div>
-                            <div class="bar-label">Returns</div>
-                            <div class="bar-value" id="returnsBarValue">₹0</div>
-                        </div>
-                        <div class="bar-wrapper">
-                            <div class="bar" id="totalBar" style="height: 100%; background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);"></div>
-                            <div class="bar-label">Total Value</div>
-                            <div class="bar-value" id="totalBarValue">₹0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="historySection" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
-                    <h3 style="color: #333; margin-bottom: 15px; font-size: 1.2rem;">📊 Saved Calculations</h3>
-                    <div id="historyList" style="max-height: 300px; overflow-y: auto;"></div>
-                </div>
+                <h3 style="color: #667eea; margin-top: 30px;">Saved Calculations</h3>
+                <div id="historyList" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
 
     <!-- Login Modal -->
-    <div id="loginModal" class="modal">
+    <div id="authModal" class="modal">
         <div class="modal-content">
-            <h2>Firebase Login</h2>
-            <input type="email" id="authEmail" class="modal-input" placeholder="Enter email">
-            <input type="password" id="authPassword" class="modal-input" placeholder="Enter password">
+            <h2>Login / Sign Up</h2>
+            <input type="email" id="email" class="modal-input" placeholder="Email" autocomplete="email">
+            <input type="password" id="password" class="modal-input" placeholder="Password" autocomplete="current-password">
             <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="handleLogin()">Login</button>
-                <button class="modal-btn primary" onclick="handleSignUp()">Sign Up</button>
+                <button class="modal-btn primary" onclick="login()">Login</button>
+                <button class="modal-btn primary" onclick="signup()">Sign Up</button>
             </div>
-            <div style="text-align: center; margin-top: 15px;">
-                <button class="modal-btn secondary" onclick="closeModal()" style="width: 100%;">Cancel</button>
-            </div>
+            <button class="modal-btn secondary" onclick="closeAuthModal()" style="width: 100%; margin-top: 10px;">Close</button>
         </div>
     </div>
 
@@ -625,10 +139,10 @@
     <div id="saveModal" class="modal">
         <div class="modal-content">
             <h2>Save Calculation</h2>
-            <input type="text" id="calcName" class="modal-input" placeholder="e.g., Retirement Plan">
+            <input type="text" id="saveName" class="modal-input" placeholder="e.g., Retirement Plan">
             <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="confirmSave()">Save</button>
-                <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveToFirestore()">Save</button>
+                <button class="modal-btn secondary" onclick="closeSaveModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -636,148 +150,214 @@
     <!-- Toast -->
     <div id="toast" class="toast"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/compat/app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/compat/firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/compat/auth.js"></script>
-
     <script>
-        // Firebase Configuration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCb_V7WGMkkPkhMCfXqfTm5Wf-4yyqc2tA",
             authDomain: "expensetracker7-15c2a.firebaseapp.com",
             projectId: "expensetracker7-15c2a",
             storageBucket: "expensetracker7-15c2a.firebasestorage.app",
             messagingSenderId: "1037918445507",
-            appId: "1:1037918445507:web:e43764d4e7a695ecf66776",
-            measurementId: "G-V4JPBQ4933"
+            appId: "1:1037918445507:web:e43764d4e7a695ecf66776"
         };
 
-        let auth, db, currentUser = null, lastCalculation = null;
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        auth = firebase.auth();
-        db = firebase.firestore();
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // Auth state listener
+        let currentUser = null;
+        let lastCalculation = null;
+
+        // Check auth state
         auth.onAuthStateChanged(user => {
             currentUser = user;
-            updateAuthUI();
-            if (user) {
-                loadCalculationHistory();
-            }
+            updateUI();
+            if (user) loadHistory();
         });
 
-        function updateAuthUI() {
-            const authContainer = document.getElementById('authContainer');
-            const userContainer = document.getElementById('userContainer');
+        function updateUI() {
+            const status = document.getElementById('authStatus');
             const saveBtn = document.getElementById('saveBtn');
-            const historySection = document.getElementById('historySection');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const authBtn = document.getElementById('authBtn');
 
             if (currentUser) {
-                authContainer.style.display = 'none';
-                userContainer.style.display = 'block';
-                document.getElementById('userEmail').textContent = currentUser.email;
+                status.textContent = `Logged in as: ${currentUser.email}`;
                 saveBtn.style.display = 'block';
-                historySection.style.display = 'block';
+                logoutBtn.style.display = 'block';
+                authBtn.style.display = 'none';
             } else {
-                authContainer.style.display = 'block';
-                userContainer.style.display = 'none';
+                status.textContent = 'Not logged in';
                 saveBtn.style.display = 'none';
-                historySection.style.display = 'none';
-                document.getElementById('historyList').innerHTML = '';
+                logoutBtn.style.display = 'none';
+                authBtn.style.display = 'block';
             }
         }
 
-        function formatCurrency(value) {
-            return '₹' + Math.round(value).toLocaleString('en-IN');
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('active');
         }
 
-        function calculateInterest() {
-            const initialAmount = parseFloat(document.getElementById('initialAmount').value) || 0;
-            const monthlyInvestment = parseFloat(document.getElementById('monthlyInvestment').value) || 0;
-            const annualReturn = parseFloat(document.getElementById('annualReturn').value) || 0;
-            const duration = parseFloat(document.getElementById('duration').value) || 0;
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+        }
 
-            if (duration <= 0) {
-                alert('Please enter a valid duration');
+        function login() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!email || !password) {
+                toast('Please enter email and password', 'error');
                 return;
             }
 
-            const totalInvested = initialAmount + (monthlyInvestment * 12 * duration);
-            const monthlyRate = annualReturn / 100 / 12;
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    toast('✅ Logged in!', 'success');
+                    closeAuthModal();
+                })
+                .catch(err => toast(err.message, 'error'));
+        }
 
-            const lumpSumFV = initialAmount * Math.pow(1 + monthlyRate, duration * 12);
+        function signup() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
 
+            if (!email || !password) {
+                toast('Please enter email and password', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                toast('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(() => {
+                    toast('✅ Account created!', 'success');
+                    closeAuthModal();
+                })
+                .catch(err => toast(err.message, 'error'));
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                toast('👋 Logged out', 'success');
+            });
+        }
+
+        function calculate() {
+            const initial = parseFloat(document.getElementById('initialAmount').value) || 0;
+            const monthly = parseFloat(document.getElementById('monthlyInvestment').value) || 0;
+            const rate = parseFloat(document.getElementById('annualReturn').value) || 0;
+            const years = parseFloat(document.getElementById('duration').value) || 0;
+
+            const totalInvested = initial + (monthly * 12 * years);
+            const monthlyRate = rate / 100 / 12;
+
+            const lumpSumFV = initial * Math.pow(1 + monthlyRate, years * 12);
             let monthlyFV = 0;
+
             if (monthlyRate === 0) {
-                monthlyFV = monthlyInvestment * 12 * duration;
+                monthlyFV = monthly * 12 * years;
             } else {
-                monthlyFV = monthlyInvestment * (Math.pow(1 + monthlyRate, duration * 12) - 1) / monthlyRate;
+                monthlyFV = monthly * (Math.pow(1 + monthlyRate, years * 12) - 1) / monthlyRate;
             }
 
             const finalValue = lumpSumFV + monthlyFV;
-            const interestEarned = finalValue - totalInvested;
-            const returnPercent = totalInvested === 0 ? 0 : (interestEarned / totalInvested) * 100;
+            const interest = finalValue - totalInvested;
 
             lastCalculation = {
-                initialAmount, monthlyInvestment, annualReturn, duration,
-                totalInvested, interestEarned, finalValue, returnPercent
+                initial, monthly, rate, years,
+                totalInvested, interest, finalValue
             };
 
-            document.getElementById('totalInvested').textContent = formatCurrency(totalInvested);
-            document.getElementById('interestEarned').textContent = formatCurrency(interestEarned);
-            document.getElementById('finalValue').textContent = formatCurrency(finalValue);
-            document.getElementById('contribution').textContent = formatCurrency(totalInvested);
-            document.getElementById('returns').textContent = formatCurrency(interestEarned);
-            document.getElementById('returnPercent').textContent = returnPercent.toFixed(2) + '%';
-
-            const maxValue = finalValue * 1.1;
-            document.getElementById('investedBar').style.height = (totalInvested / maxValue) * 100 + '%';
-            document.getElementById('returnsBar').style.height = (interestEarned / maxValue) * 100 + '%';
-            document.getElementById('totalBar').style.height = '100%';
-
-            document.getElementById('investedBarValue').textContent = formatCurrency(totalInvested);
-            document.getElementById('returnsBarValue').textContent = formatCurrency(interestEarned);
-            document.getElementById('totalBarValue').textContent = formatCurrency(finalValue);
+            document.getElementById('resultInvested').textContent = '₹' + totalInvested.toLocaleString('en-IN');
+            document.getElementById('resultInterest').textContent = '₹' + interest.toLocaleString('en-IN');
+            document.getElementById('resultFinal').textContent = '₹' + finalValue.toLocaleString('en-IN');
         }
 
-        function loadCalculationHistory() {
-            if (!currentUser) return;
+        function openSaveModal() {
+            if (!currentUser) {
+                toast('Please login first', 'error');
+                return;
+            }
+            document.getElementById('saveModal').classList.add('active');
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveModal').classList.remove('active');
+            document.getElementById('saveName').value = '';
+        }
+
+        function saveToFirestore() {
+            const name = document.getElementById('saveName').value.trim();
+
+            if (!name) {
+                toast('Please enter a name', 'error');
+                return;
+            }
+
+            if (!currentUser) {
+                toast('Not logged in', 'error');
+                return;
+            }
+
+            console.log('Saving to Firestore:', { name, ...lastCalculation });
+
+            db.collection('users').doc(currentUser.uid).collection('calculations').add({
+                name,
+                ...lastCalculation,
+                timestamp: firebase.firestore.Timestamp.now()
+            })
+            .then(() => {
+                toast('✅ Saved to Firestore!', 'success');
+                closeSaveModal();
+                loadHistory();
+            })
+            .catch(err => {
+                console.error('Save error:', err);
+                toast('Error: ' + err.message, 'error');
+            });
+        }
+
+        function loadHistory() {
+            if (!currentUser) {
+                document.getElementById('historyList').innerHTML = '';
+                return;
+            }
 
             db.collection('users').doc(currentUser.uid).collection('calculations')
                 .orderBy('timestamp', 'desc')
                 .onSnapshot(snapshot => {
-                    const historyList = document.getElementById('historyList');
-                    historyList.innerHTML = '';
+                    const list = document.getElementById('historyList');
+                    list.innerHTML = '';
 
                     if (snapshot.empty) {
-                        historyList.innerHTML = '<div class="empty-history">No saved calculations yet. Create and save one!</div>';
+                        list.innerHTML = '<p style="color: #999;">No saved calculations</p>';
                         return;
                     }
 
                     snapshot.forEach(doc => {
                         const calc = doc.data();
-                        const date = new Date(calc.timestamp.toDate()).toLocaleDateString();
                         const item = document.createElement('div');
                         item.className = 'history-item';
                         item.innerHTML = `
-                            <div class="history-item-content">
-                                <div class="history-item-title">${calc.name}</div>
-                                <div class="history-item-details">
-                                    Initial: ${formatCurrency(calc.initialAmount)} | Monthly: ${formatCurrency(calc.monthlyInvestment)} | Return: ${calc.annualReturn}% | Duration: ${calc.duration}y
-                                </div>
-                                <div class="history-item-value">Final: ${formatCurrency(calc.finalValue)}</div>
+                            <div class="history-item-title">${calc.name}</div>
+                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 8px;">
+                                Initial: ₹${calc.totalInvested.toLocaleString('en-IN')} | Final: <strong>₹${calc.finalValue.toLocaleString('en-IN')}</strong>
                             </div>
-                            <div class="history-item-buttons">
-                                <button class="history-btn history-btn-load" onclick="loadCalculation(${calc.initialAmount}, ${calc.monthlyInvestment}, ${calc.annualReturn}, ${calc.duration})">Load</button>
-                                <button class="history-btn history-btn-delete" onclick="deleteCalculation('${doc.id}')">Delete</button>
+                            <div class="history-buttons">
+                                <button class="btn btn-secondary" onclick="loadCalculation(${calc.initial}, ${calc.monthly}, ${calc.rate}, ${calc.years})" style="padding: 6px 12px; width: auto;">Load</button>
+                                <button class="btn btn-danger" onclick="deleteCalculation('${doc.id}')" style="padding: 6px 12px; width: auto;">Delete</button>
                             </div>
                         `;
-                        historyList.appendChild(item);
+                        list.appendChild(item);
                     });
-                })
-                .catch(err => console.error("Error loading history:", err));
+                });
         }
 
         function loadCalculation(initial, monthly, rate, years) {
@@ -785,8 +365,8 @@
             document.getElementById('monthlyInvestment').value = monthly;
             document.getElementById('annualReturn').value = rate;
             document.getElementById('duration').value = years;
-            calculateInterest();
-            showToast('Calculation loaded!', 'success');
+            calculate();
+            toast('✅ Calculation loaded!', 'success');
         }
 
         function deleteCalculation(docId) {
@@ -794,143 +374,35 @@
 
             db.collection('users').doc(currentUser.uid).collection('calculations').doc(docId).delete()
                 .then(() => {
-                    showToast('✅ Calculation deleted!', 'success');
-                    loadCalculationHistory();
+                    toast('✅ Deleted!', 'success');
+                    loadHistory();
                 })
-                .catch(err => showToast(err.message, 'error'));
+                .catch(err => toast('Error: ' + err.message, 'error'));
         }
 
-        function saveCalculation() {
-            if (!currentUser) {
-                showToast('Please login to save', 'error');
-                document.getElementById('loginModal').classList.add('active');
-                return;
-            }
-            if (!lastCalculation) {
-                showToast('Please calculate first', 'error');
-                return;
-            }
-            document.getElementById('saveModal').classList.add('active');
+        function toast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast active ' + type;
+            setTimeout(() => t.classList.remove('active'), 3000);
         }
 
-        function confirmSave() {
-            const name = document.getElementById('calcName').value.trim();
-            if (!name) {
-                showToast('Please enter a name', 'error');
-                return;
-            }
-
-            db.collection('users').doc(currentUser.uid).collection('calculations').add({
-                name,
-                initialAmount: lastCalculation.initialAmount,
-                monthlyInvestment: lastCalculation.monthlyInvestment,
-                annualReturn: lastCalculation.annualReturn,
-                duration: lastCalculation.duration,
-                totalInvested: lastCalculation.totalInvested,
-                interestEarned: lastCalculation.interestEarned,
-                finalValue: lastCalculation.finalValue,
-                returnPercent: lastCalculation.returnPercent,
-                timestamp: firebase.firestore.Timestamp.now()
-            }).then(() => {
-                showToast('✅ Calculation saved to Firestore!', 'success');
-                closeModal();
-                document.getElementById('calcName').value = '';
-                loadCalculationHistory();
-            }).catch(err => showToast(err.message, 'error'));
+        // Click outside modal to close
+        window.onclick = function(event) {
+            const authModal = document.getElementById('authModal');
+            const saveModal = document.getElementById('saveModal');
+            if (event.target === authModal) closeAuthModal();
+            if (event.target === saveModal) closeSaveModal();
         }
 
-        function handleLogin() {
-            const email = document.getElementById('authEmail').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
+        // Enter key on inputs
+        document.getElementById('initialAmount').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
+        document.getElementById('monthlyInvestment').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
+        document.getElementById('annualReturn').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
+        document.getElementById('duration').addEventListener('keypress', e => { if(e.key==='Enter') calculate(); });
 
-            if (!email || !password) {
-                showToast('Please enter email and password', 'error');
-                return;
-            }
-
-            auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    showToast('✅ Logged in successfully!', 'success');
-                    closeModal();
-                })
-                .catch(err => showToast(err.message, 'error'));
-        }
-
-        function handleSignUp() {
-            const email = document.getElementById('authEmail').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
-
-            if (!email || !password) {
-                showToast('Please enter email and password', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showToast('Password must be at least 6 characters', 'error');
-                return;
-            }
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
-                    showToast('✅ Account created! You are now logged in.', 'success');
-                    closeModal();
-                })
-                .catch(err => showToast(err.message, 'error'));
-        }
-
-        function handleLogout() {
-            auth.signOut().then(() => {
-                showToast('👋 Logged out', 'success');
-            }).catch(err => showToast(err.message, 'error'));
-        }
-
-        function closeModal() {
-            document.getElementById('loginModal').classList.remove('active');
-            document.getElementById('saveModal').classList.remove('active');
-            document.getElementById('authEmail').value = '';
-            document.getElementById('authPassword').value = '';
-        }
-
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast active ' + type;
-            setTimeout(() => toast.classList.remove('active'), 3000);
-        }
-
-        // Wait for DOM to be ready
-        window.addEventListener('DOMContentLoaded', function() {
-            const loginBtn = document.getElementById('loginBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-
-            if (loginBtn) {
-                loginBtn.addEventListener('click', () => {
-                    document.getElementById('loginModal').classList.add('active');
-                });
-            }
-
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', handleLogout);
-            }
-
-            document.getElementById('initialAmount').addEventListener('input', calculateInterest);
-            document.getElementById('monthlyInvestment').addEventListener('input', calculateInterest);
-            document.getElementById('annualReturn').addEventListener('input', calculateInterest);
-            document.getElementById('duration').addEventListener('input', calculateInterest);
-
-            document.getElementById('authPassword').addEventListener('keypress', e => {
-                if (e.key === 'Enter') {
-                    const btn = e.target.nextElementSibling?.nextElementSibling?.firstElementChild;
-                    if (btn) btn.click();
-                }
-            });
-
-            calculateInterest();
-        });
-
-        window.addEventListener('click', e => {
-            if (e.target.classList.contains('modal')) e.target.classList.remove('active');
-        });
+        // Initial calculation
+        calculate();
     </script>
 </body>
 </html>
