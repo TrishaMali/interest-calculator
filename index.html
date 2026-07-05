@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compound Interest Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .input-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 15px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+        }
+
+        .result-card.card-2 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .result-card.card-3 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            box-shadow: 0 5px 15px rgba(67, 233, 123, 0.3);
+        }
+
+        .result-card h3 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .breakdown {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .breakdown h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-label {
+            font-weight: 600;
+        }
+
+        .breakdown-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 250px;
+            gap: 20px;
+        }
+
+        .bar-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+        }
+
+        .bar {
+            width: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            min-height: 10px;
+        }
+
+        .bar:hover {
+            transform: scaleY(1.05);
+            filter: brightness(1.1);
+        }
+
+        .bar-label {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .bar-value {
+            font-size: 0.9rem;
+            color: #667eea;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header p {
+                font-size: 0.95rem;
+            }
+
+            .result-value {
+                font-size: 1.5rem;
+            }
+
+            .chart-bars {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Compound Interest Calculator</h1>
+            <p>Calculate your wealth growth with compound interest</p>
+        </div>
+
+        <div class="content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2>Investment Details</h2>
+
+                <div class="input-group">
+                    <label for="initialAmount">Initial Amount (₹)</label>
+                    <input type="number" id="initialAmount" placeholder="Enter initial investment" value="100000" min="0" step="1000">
+                </div>
+
+                <div class="input-group">
+                    <label for="monthlyInvestment">Monthly Investment (₹)</label>
+                    <input type="number" id="monthlyInvestment" placeholder="Enter monthly contribution" value="5000" min="0" step="1000">
+                </div>
+
+                <div class="input-group">
+                    <label for="annualReturn">Expected Annual Return (%)</label>
+                    <input type="number" id="annualReturn" placeholder="Enter expected return" value="12" min="0" max="100" step="0.1">
+                </div>
+
+                <div class="input-group">
+                    <label for="duration">Investment Duration (Years)</label>
+                    <input type="number" id="duration" placeholder="Enter duration in years" value="20" min="1" step="1">
+                </div>
+
+                <button class="calculate-btn" onclick="calculateInterest()">Calculate</button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2>Your Results</h2>
+
+                <div class="result-card">
+                    <h3>Total Amount Invested</h3>
+                    <div class="result-value" id="totalInvested">₹0</div>
+                </div>
+
+                <div class="result-card card-2">
+                    <h3>Interest Earned</h3>
+                    <div class="result-value" id="interestEarned">₹0</div>
+                </div>
+
+                <div class="result-card card-3">
+                    <h3>Final Portfolio Value</h3>
+                    <div class="result-value" id="finalValue">₹0</div>
+                </div>
+
+                <div class="breakdown">
+                    <h3>Investment Breakdown</h3>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Your Contribution:</span>
+                        <span class="breakdown-value" id="contribution">₹0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Returns Generated:</span>
+                        <span class="breakdown-value" id="returns">₹0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Return %:</span>
+                        <span class="breakdown-value" id="returnPercent">0%</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-bars">
+                        <div class="bar-wrapper">
+                            <div class="bar" id="investedBar" style="height: 30%;"></div>
+                            <div class="bar-label">Invested</div>
+                            <div class="bar-value" id="investedBarValue">₹0</div>
+                        </div>
+                        <div class="bar-wrapper">
+                            <div class="bar" id="returnsBar" style="height: 70%; background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);"></div>
+                            <div class="bar-label">Returns</div>
+                            <div class="bar-value" id="returnsBarValue">₹0</div>
+                        </div>
+                        <div class="bar-wrapper">
+                            <div class="bar" id="totalBar" style="height: 100%; background: linear-gradient(180deg, #43e97b 0%, #38f9d7 100%);"></div>
+                            <div class="bar-label">Total Value</div>
+                            <div class="bar-value" id="totalBarValue">₹0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatCurrency(value) {
+            return '₹' + Math.round(value).toLocaleString('en-IN');
+        }
+
+        function calculateInterest() {
+            const initialAmount = parseFloat(document.getElementById('initialAmount').value) || 0;
+            const monthlyInvestment = parseFloat(document.getElementById('monthlyInvestment').value) || 0;
+            const annualReturn = parseFloat(document.getElementById('annualReturn').value) || 0;
+            const duration = parseFloat(document.getElementById('duration').value) || 0;
+
+            if (duration <= 0) {
+                alert('Please enter a valid duration');
+                return;
+            }
+
+            // Calculate total invested amount
+            const totalInvested = initialAmount + (monthlyInvestment * 12 * duration);
+
+            // Calculate final value using compound interest formula
+            // For lump sum: FV = PV(1 + r)^n
+            // For monthly investments: FV = PMT * [((1 + r)^n - 1) / r]
+
+            const monthlyRate = annualReturn / 100 / 12;
+
+            // Lump sum future value
+            const lumpSumFV = initialAmount * Math.pow(1 + monthlyRate, duration * 12);
+
+            // Monthly investment future value
+            let monthlyFV = 0;
+            if (monthlyRate === 0) {
+                monthlyFV = monthlyInvestment * 12 * duration;
+            } else {
+                monthlyFV = monthlyInvestment * (Math.pow(1 + monthlyRate, duration * 12) - 1) / monthlyRate;
+            }
+
+            // Total future value
+            const finalValue = lumpSumFV + monthlyFV;
+
+            // Calculate interest earned
+            const interestEarned = finalValue - totalInvested;
+
+            // Calculate return percentage
+            const returnPercent = totalInvested === 0 ? 0 : (interestEarned / totalInvested) * 100;
+
+            // Update display
+            document.getElementById('totalInvested').textContent = formatCurrency(totalInvested);
+            document.getElementById('interestEarned').textContent = formatCurrency(interestEarned);
+            document.getElementById('finalValue').textContent = formatCurrency(finalValue);
+
+            document.getElementById('contribution').textContent = formatCurrency(totalInvested);
+            document.getElementById('returns').textContent = formatCurrency(interestEarned);
+            document.getElementById('returnPercent').textContent = returnPercent.toFixed(2) + '%';
+
+            // Update bar chart
+            const maxValue = finalValue * 1.1;
+            const investedPercent = (totalInvested / maxValue) * 100;
+            const returnsPercent = (interestEarned / maxValue) * 100;
+            const totalPercent = 100;
+
+            document.getElementById('investedBar').style.height = investedPercent + '%';
+            document.getElementById('returnsBar').style.height = returnsPercent + '%';
+            document.getElementById('totalBar').style.height = totalPercent + '%';
+
+            document.getElementById('investedBarValue').textContent = formatCurrency(totalInvested);
+            document.getElementById('returnsBarValue').textContent = formatCurrency(interestEarned);
+            document.getElementById('totalBarValue').textContent = formatCurrency(finalValue);
+        }
+
+        // Calculate on input change
+        document.getElementById('initialAmount').addEventListener('change', calculateInterest);
+        document.getElementById('monthlyInvestment').addEventListener('change', calculateInterest);
+        document.getElementById('annualReturn').addEventListener('change', calculateInterest);
+        document.getElementById('duration').addEventListener('change', calculateInterest);
+
+        // Initial calculation
+        calculateInterest();
+    </script>
+</body>
+</html>
